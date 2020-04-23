@@ -1229,6 +1229,8 @@ type TaskAgent struct {
 	AssignedRequest *TaskAgentJobRequest `json:"assignedRequest,omitempty"`
 	// Authorization information for this agent.
 	Authorization *TaskAgentAuthorization `json:"authorization,omitempty"`
+	// The labels of the runner.
+	Labels *[]string `json:"labels,omitempty"`
 	// Date on which this agent was created.
 	CreatedOn *azuredevops.Time `json:"createdOn,omitempty"`
 	// The last request which was completed by this agent.
