@@ -53,6 +53,8 @@ type Client interface {
 	DeleteDeploymentGroup(context.Context, DeleteDeploymentGroupArgs) error
 	// [Preview API] Delete a deployment target in a deployment group. This deletes the agent from associated deployment pool too.
 	DeleteDeploymentTarget(context.Context, DeleteDeploymentTargetArgs) error
+	// [Preview API]
+	DeleteMessage(context.Context, DeleteMessageArgs) error
 	// [Preview API] Delete a task group.
 	DeleteTaskGroup(context.Context, DeleteTaskGroupArgs) error
 	// [Preview API] Delete a variable group
@@ -587,6 +589,41 @@ type DeleteDeploymentTargetArgs struct {
 	DeploymentGroupId *int
 	// (required) ID of the deployment target to delete.
 	TargetId *int
+}
+
+// [Preview API]
+func (client *ClientImpl) DeleteMessage(ctx context.Context, args DeleteMessageArgs) error {
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+	if args.MessageId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.MessageId"}
+	}
+	routeValues["messageId"] = strconv.Itoa(*args.PoolId)
+	if args.SessionId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.SessionId"}
+	}
+	routeValues["sessionId"] = (*args.SessionId).String()
+
+	locationId, _ := uuid.Parse("c3a054f6-7a8a-49c0-944e-3a8e5d7adfd7")
+	_, err := client.Client.Send(ctx, http.MethodDelete, locationId, "5.1-preview.1", routeValues, nil, nil, "", "application/json", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Arguments for the DeleteMessage function
+type DeleteMessageArgs struct {
+	// (required)
+	PoolId *int
+	// (required)
+	MessageId *uint64
+	// (required)
+	SessionId *uuid.UUID
 }
 
 // [Preview API] Delete a task group.
