@@ -37,6 +37,8 @@ type Client interface {
 	AddTaskGroup(context.Context, AddTaskGroupArgs) (*TaskGroup, error)
 	// [Preview API] Add a variable group.
 	AddVariableGroup(context.Context, AddVariableGroupArgs) (*VariableGroup, error)
+	// [Preview API]
+	CreateAgentSession(context.Context, CreateAgentSessionArgs) (*TaskAgentSession, error)
 	// Delete an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove an agent from your organization.
 	DeleteAgent(context.Context, DeleteAgentArgs) error
 	// [Preview API]
@@ -351,6 +353,40 @@ type AddVariableGroupArgs struct {
 	Group *VariableGroupParameters
 	// (required) Project ID or project name
 	Project *string
+}
+
+// [Preview API]
+func (client *ClientImpl) CreateAgentSession(ctx context.Context, args CreateAgentSessionArgs) (*TaskAgentSession, error) {
+	if args.Session == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.Session"}
+	}
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+
+	body, marshalErr := json.Marshal(*args.Session)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+	locationId, _ := uuid.Parse("134e239e-2df3-4794-a6f6-24f1f19ec8dc")
+	resp, err := client.Client.Send(ctx, http.MethodPost, locationId, "5.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseValue TaskAgentSession
+	err = client.Client.UnmarshalBody(resp, &responseValue)
+	return &responseValue, err
+}
+
+// Arguments for the CreateAgentSession function
+type CreateAgentSessionArgs struct {
+	// (required)
+	Session *TaskAgentSession
+	// (required)
+	PoolId *int
 }
 
 // Delete an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove an agent from your organization.
