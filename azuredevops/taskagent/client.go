@@ -47,6 +47,8 @@ type Client interface {
 	DeleteAgentPool(context.Context, DeleteAgentPoolArgs) error
 	// [Preview API] Removes an agent queue from a project.
 	DeleteAgentQueue(context.Context, DeleteAgentQueueArgs) error
+	// [Preview API]
+	DeleteAgentSession(context.Context, DeleteAgentSessionArgs) error
 	// [Preview API] Delete a deployment group.
 	DeleteDeploymentGroup(context.Context, DeleteDeploymentGroupArgs) error
 	// [Preview API] Delete a deployment target in a deployment group. This deletes the agent from associated deployment pool too.
@@ -492,6 +494,35 @@ type DeleteAgentQueueArgs struct {
 	QueueId *int
 	// (optional) Project ID or project name
 	Project *string
+}
+
+// [Preview API]
+func (client *ClientImpl) DeleteAgentSession(ctx context.Context, args DeleteAgentSessionArgs) error {
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+	if args.SessionId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.SessionId"}
+	}
+	routeValues["sessionId"] = (*args.SessionId).String()
+
+	locationId, _ := uuid.Parse("134e239e-2df3-4794-a6f6-24f1f19ec8dc")
+	_, err := client.Client.Send(ctx, http.MethodDelete, locationId, "5.1-preview.1", routeValues, nil, nil, "", "application/json", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Arguments for the DeleteAgentSession function
+type DeleteAgentSessionArgs struct {
+	// (required)
+	PoolId *int
+	// (required)
+	SessionId *uuid.UUID
 }
 
 // [Preview API] Delete a deployment group.
