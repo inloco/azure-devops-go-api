@@ -93,6 +93,8 @@ type Client interface {
 	GetDeploymentTarget(context.Context, GetDeploymentTargetArgs) (*DeploymentMachine, error)
 	// [Preview API] Get a list of deployment targets in a deployment group.
 	GetDeploymentTargets(context.Context, GetDeploymentTargetsArgs) (*GetDeploymentTargetsResponseValue, error)
+	// [Preview API]
+	GetMessage(context.Context, GetMessageArgs) (*TaskAgentMessage, error)
 	// [Preview API] List task groups.
 	GetTaskGroups(context.Context, GetTaskGroupsArgs) (*[]TaskGroup, error)
 	// [Preview API] Get a variable group.
@@ -1388,6 +1390,43 @@ type GetDeploymentTargetsResponseValue struct {
 	Value []DeploymentMachine
 	// The continuation token to be used to get the next page of results.
 	ContinuationToken string
+}
+
+// [Preview API]
+func (client *ClientImpl) GetMessage(ctx context.Context, args GetMessageArgs) (*TaskAgentMessage, error) {
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+
+	queryParams := url.Values{}
+	if args.SessionId == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "sessionId"}
+	}
+	queryParams.Add("sessionId", (*args.SessionId).String())
+	if args.LastMessageId != nil {
+		queryParams.Add("lastMessageId", strconv.FormatUint(*args.LastMessageId, 10))
+	}
+	locationId, _ := uuid.Parse("c3a054f6-7a8a-49c0-944e-3a8e5d7adfd7")
+	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseValue TaskAgentMessage
+	err = client.Client.UnmarshalBody(resp, &responseValue)
+	return &responseValue, err
+}
+
+// Arguments for the GetMessage function
+type GetMessageArgs struct {
+	// (required)
+	PoolId *int
+	// (required)
+	SessionId *uuid.UUID
+	// (optional)
+	LastMessageId *uint64
 }
 
 // [Preview API] List task groups.
