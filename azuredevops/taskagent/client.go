@@ -106,6 +106,8 @@ type Client interface {
 	GetYamlSchema(context.Context, GetYamlSchemaArgs) (interface{}, error)
 	// Replace an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove and reconfigure an agent from your organization.
 	ReplaceAgent(context.Context, ReplaceAgentArgs) (*TaskAgent, error)
+	// [Preview API]
+	SendMessage(context.Context, SendMessageArgs) error
 	// Update agent details.
 	UpdateAgent(context.Context, UpdateAgentArgs) (*TaskAgent, error)
 	// Update properties on an agent pool
@@ -1663,6 +1665,44 @@ type ReplaceAgentArgs struct {
 	PoolId *int
 	// (required) The agent to replace
 	AgentId *int
+}
+
+// [Preview API]
+func (client *ClientImpl) SendMessage(ctx context.Context, args SendMessageArgs) error {
+	if args.Message == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.Message"}
+	}
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+
+	queryParams := url.Values{}
+	if args.RequestId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "requestId"}
+	}
+	queryParams.Add("requestId", strconv.FormatUint(*args.RequestId, 10))
+	body, marshalErr := json.Marshal(*args.Message)
+	if marshalErr != nil {
+		return marshalErr
+	}
+	locationId, _ := uuid.Parse("c3a054f6-7a8a-49c0-944e-3a8e5d7adfd7")
+	_, err := client.Client.Send(ctx, http.MethodPost, locationId, "5.1-preview.1", routeValues, queryParams, bytes.NewReader(body), "application/json", "application/json", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SendMessageArgs struct {
+	// (required)
+	Message *TaskAgentMessage
+	// (required)
+	PoolId *int
+	// (required)
+	RequestId *uint64
 }
 
 // Update agent details.
