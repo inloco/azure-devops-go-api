@@ -1416,6 +1416,10 @@ func (client *ClientImpl) GetMessage(ctx context.Context, args GetMessageArgs) (
 		return nil, err
 	}
 
+	if resp.ContentLength == 0 {
+		return nil, nil
+	}
+
 	var responseValue TaskAgentMessage
 	err = client.Client.UnmarshalBody(resp, &responseValue)
 	return &responseValue, err
