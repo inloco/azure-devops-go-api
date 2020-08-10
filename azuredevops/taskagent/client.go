@@ -606,13 +606,14 @@ func (client *ClientImpl) DeleteMessage(ctx context.Context, args DeleteMessageA
 		return &azuredevops.ArgumentNilError{ArgumentName: "args.MessageId"}
 	}
 	routeValues["messageId"] = strconv.Itoa(*args.PoolId)
-	if args.SessionId == nil {
-		return &azuredevops.ArgumentNilError{ArgumentName: "args.SessionId"}
-	}
-	routeValues["sessionId"] = (*args.SessionId).String()
 
+	queryParams := url.Values{}
+	if args.SessionId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "sessionId"}
+	}
+	queryParams.Add("sessionId", (*args.SessionId).String())
 	locationId, _ := uuid.Parse("c3a054f6-7a8a-49c0-944e-3a8e5d7adfd7")
-	_, err := client.Client.Send(ctx, http.MethodDelete, locationId, "5.1-preview.1", routeValues, nil, nil, "", "application/json", nil)
+	_, err := client.Client.Send(ctx, http.MethodDelete, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
 		return err
 	}
