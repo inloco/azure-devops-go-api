@@ -105,6 +105,7 @@ type Client interface {
 	GetVariableGroupsById(context.Context, GetVariableGroupsByIdArgs) (*[]VariableGroup, error)
 	GetYamlSchema(context.Context, GetYamlSchemaArgs) (interface{}, error)
 	RaisePlanEvent(context.Context, RaisePlanEventArgs) error
+	RenewAgentRequest(context.Context, RenewAgentRequestArgs) (*TaskAgentJobRequest, error)
 	// Replace an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove and reconfigure an agent from your organization.
 	ReplaceAgent(context.Context, ReplaceAgentArgs) (*TaskAgent, error)
 	// [Preview API]
@@ -1674,6 +1675,57 @@ type RaisePlanEventArgs struct {
 	HubName *string
 	// (required)
 	PlanId *uuid.UUID
+}
+
+func (client *ClientImpl) RenewAgentRequest(ctx context.Context, args RenewAgentRequestArgs) (*TaskAgentJobRequest, error) {
+	request := TaskAgentJobRequest{
+		RequestId: args.RequestId,
+		ExpiresOn: args.ExpiresOn,
+	}
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+	if args.RequestId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.RequestId"}
+	}
+	routeValues["requestId"] = strconv.Itoa(*args.RequestId)
+
+	queryParams := url.Values{}
+	if args.LockToken == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "lockToken"}
+	}
+	queryParams.Add("lockToken", (*args.LockToken).String())
+	additionalHeaders := make(map[string]string)
+	if args.OrchestrationId != nil && *args.OrchestrationId != "" {
+		additionalHeaders["X-VSS-OrchestrationId"] = *args.OrchestrationId
+	}
+	body, marshalErr := json.Marshal(request)
+	if marshalErr != nil {
+		return marshalErr
+	}
+	locationId, _ := uuid.Parse("fc825784-c92a-4299-9221-998a02d1b54f")
+	_, err := client.Client.Send(ctx, http.MethodPost, locationId, "5.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", additionalHeaders)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Arguments for the RenewAgentRequest function
+type RenewAgentRequestArgs struct {
+	// (required)
+	PoolId *int
+	// (required)
+	RequestId *uint64
+	// (required)
+	LockToken *uuid.UUID
+	// (optional)
+	ExpiresOn *azuredevops.Time
+	// (optional)
+	OrchestrationId *string
 }
 
 // Replace an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove and reconfigure an agent from your organization.
