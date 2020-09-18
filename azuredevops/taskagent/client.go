@@ -104,6 +104,7 @@ type Client interface {
 	// [Preview API] Get variable groups by ids.
 	GetVariableGroupsById(context.Context, GetVariableGroupsByIdArgs) (*[]VariableGroup, error)
 	GetYamlSchema(context.Context, GetYamlSchemaArgs) (interface{}, error)
+	RaisePlanEvent(context.Context, RaisePlanEventArgs) error
 	// Replace an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove and reconfigure an agent from your organization.
 	ReplaceAgent(context.Context, ReplaceAgentArgs) (*TaskAgent, error)
 	// [Preview API]
@@ -1630,6 +1631,49 @@ func (client *ClientImpl) GetYamlSchema(ctx context.Context, args GetYamlSchemaA
 
 // Arguments for the GetYamlSchema function
 type GetYamlSchemaArgs struct {
+}
+
+func (client *ClientImpl) RaisePlanEvent(ctx context.Context, args RaisePlanEventArgs) error {
+	if args.JobEvent == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.JobEvent"}
+	}
+	routeValues := make(map[string]string)
+	if args.ScopeIdentifier == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.ScopeIdentifier"}
+	}
+	routeValues["scopeIdentifier"] = strconv.Itoa(*args.ScopeIdentifier)
+	if args.HubName == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.HubName"}
+	}
+	routeValues["hubName"] = strconv.Itoa(*args.HubName)
+	if args.PlanId == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.PlanId"}
+	}
+	routeValues["planId"] = strconv.Itoa(*args.PlanId)
+
+	body, marshalErr := json.Marshal(*args.JobEvent)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+	locationId, _ := uuid.Parse("557624af-b29e-4c20-8ab0-0399d2204f3f")
+	_, err := client.Client.Send(ctx, http.MethodPost, locationId, "2.0-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Arguments for the RaisePlanEvent function
+type RaisePlanEventArgs struct {
+	// (required)
+	JobEvent interface{}
+	// (required)
+	ScopeIdentifier *uuid.UUID
+	// (required)
+	HubName *string
+	// (required)
+	PlanId *uuid.UUID
 }
 
 // Replace an agent.  You probably don't want to call this endpoint directly. Instead, [use the agent configuration script](https://docs.microsoft.com/azure/devops/pipelines/agents/agents) to remove and reconfigure an agent from your organization.
