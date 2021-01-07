@@ -1757,6 +1757,8 @@ type TaskAgentSession struct {
 	// Gets the unique identifier for this session.
 	SessionId          *uuid.UUID         `json:"sessionId,omitempty"`
 	SystemCapabilities *map[string]string `json:"systemCapabilities,omitempty"`
+	// Gets or sets whether to use FIPS compliant encryption scheme for job message key
+	UseFipsEncryption *bool `json:"useFipsEncryption,omitempty"`
 }
 
 // Represents a symmetric key used for message-level encryption for communication sent to an agent.
