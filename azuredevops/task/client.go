@@ -40,6 +40,7 @@ type Client interface {
 	GetRecords(context.Context, GetRecordsArgs) (*[]TimelineRecord, error)
 	GetTimeline(context.Context, GetTimelineArgs) (*Timeline, error)
 	GetTimelines(context.Context, GetTimelinesArgs) (*[]Timeline, error)
+	RaisePlanEvent(context.Context, RaisePlanEventArgs) error
 	UpdateRecords(context.Context, UpdateRecordsArgs) (*[]TimelineRecord, error)
 }
 
@@ -733,6 +734,49 @@ func (client *ClientImpl) GetTimelines(ctx context.Context, args GetTimelinesArg
 
 // Arguments for the GetTimelines function
 type GetTimelinesArgs struct {
+	// (required) The project GUID to scope the request
+	ScopeIdentifier *uuid.UUID
+	// (required) The name of the server hub: "build" for the Build server or "rm" for the Release Management server
+	HubName *string
+	// (required)
+	PlanId *uuid.UUID
+}
+
+func (client *ClientImpl) RaisePlanEvent(ctx context.Context, args RaisePlanEventArgs) error {
+	if args.EventData == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.EventData"}
+	}
+	routeValues := make(map[string]string)
+	if args.ScopeIdentifier == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.ScopeIdentifier"}
+	}
+	routeValues["scopeIdentifier"] = (*args.ScopeIdentifier).String()
+	if args.HubName == nil || *args.HubName == "" {
+		return &azuredevops.ArgumentNilOrEmptyError{ArgumentName: "args.HubName"}
+	}
+	routeValues["hubName"] = *args.HubName
+	if args.PlanId == nil {
+		return &azuredevops.ArgumentNilError{ArgumentName: "args.PlanId"}
+	}
+	routeValues["planId"] = (*args.PlanId).String()
+
+	body, marshalErr := json.Marshal(*args.EventData)
+	if marshalErr != nil {
+		return marshalErr
+	}
+	locationId, _ := uuid.Parse("557624af-b29e-4c20-8ab0-0399d2204f3f")
+	_, err := client.Client.Send(ctx, http.MethodPost, locationId, "2.0-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Arguments for the RaisePlanEvent function
+type RaisePlanEventArgs struct {
+	// (required)
+	EventData *JobEvent
 	// (required) The project GUID to scope the request
 	ScopeIdentifier *uuid.UUID
 	// (required) The name of the server hub: "build" for the Build server or "rm" for the Release Management server

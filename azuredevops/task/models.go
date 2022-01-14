@@ -11,7 +11,24 @@ package task
 import (
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/taskagent"
 )
+
+type ActionsEnvironmentReference struct {
+	Name *string        `json:"name,omitempty"`
+	Url  *TemplateToken `json:"url,omitempty"`
+}
+
+type ActionsStepTelemetry struct {
+	Ref         *string `json:"ref,omitempty"`
+	Type        *string `json:"type,omitempty"`
+	HasRunsStep *bool   `json:"hasRunsStep,omitempty"`
+	HasUsesStep *bool   `json:"hasUsesStep,omitempty"`
+	IsEmbedded  *bool   `json:"isEmbedded,omitempty"`
+	HasPreStep  *bool   `json:"hasPreStep,omitempty"`
+	HasPostStep *bool   `json:"hasPostStep,omitempty"`
+	StepCount   *int    `json:"stepCount,omitempty"`
+}
 
 type Issue struct {
 	Category *string            `json:"category,omitempty"`
@@ -32,11 +49,41 @@ var IssueTypeValues = issueTypeValuesType{
 	Warning: "warning",
 }
 
+type JobEvent struct {
+	Name                  *string                        `json:"name,omitempty"`
+	JobId                 *uuid.UUID                     `json:"jobId,omitempty"`
+	TaskId                *uuid.UUID                     `json:"taskId,omitempty"`
+	Request               *taskagent.TaskAgentJobRequest `json:"request,omitempty"`
+	RequestId             *int64                         `json:"requestId,omitempty"`
+	Result                *TaskResult                    `json:"result,omitempty"`
+	Outputs               *map[string]VariableValue      `json:"outputs,omitempty"`
+	ActionsEnvironment    *ActionsEnvironmentReference   `json:"actionsEnvironment,omitempty"`
+	ActionsStepsTelemetry *[]ActionsStepTelemetry        `json:"actionsStepsTelemetry,omitempty"`
+	JobTelemetry          *[]JobTelemetry                `json:"jobTelemetry,omitempty"`
+}
+
 // Represents an option that may affect the way an agent runs the job.
 type JobOption struct {
 	Data *map[string]string `json:"data,omitempty"`
 	// Gets the id of the option.
 	Id *uuid.UUID `json:"id,omitempty"`
+}
+
+type JobTelemetry struct {
+	Message *string           `json:"message,omitempty"`
+	Type    *JobTelemetryType `json:"type,omitempty"`
+}
+
+type JobTelemetryType int
+
+type jobTelemetryTypeValuesType struct {
+	General        JobTelemetryType
+	ActionCommand  JobTelemetryType
+}
+
+var JobTelemetryTypeValues = jobTelemetryTypeValuesType{
+	General:       0,
+	ActionCommand: 1,
 }
 
 type MaskHint struct {
@@ -288,6 +335,13 @@ var TaskResultValues = taskResultValuesType{
 	Canceled:            "canceled",
 	Skipped:             "skipped",
 	Abandoned:           "abandoned",
+}
+
+type TemplateToken struct {
+	Type *int32 `json:"type,omitempty"`
+	File *int32 `json:"file,omitempty"`
+	Line *int32 `json:"line,omitempty"`
+	Col  *int32 `json:"col,omitempty"`
 }
 
 type Timeline struct {
