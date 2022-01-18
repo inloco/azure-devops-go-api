@@ -1813,7 +1813,7 @@ func (client *ClientImpl) UpdateAgentRequest(ctx context.Context, args UpdateAge
 		return nil, marshalErr
 	}
 	locationId, _ := uuid.Parse("fc825784-c92a-4299-9221-998a02d1b54f")
-	resp, err := client.Client.Send(ctx, http.MethodPatch, locationId, "5.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", additionalHeaders)
+	resp, err := client.Client.Send(ctx, http.MethodPatch, locationId, "5.1-preview.1", routeValues, queryParams, bytes.NewReader(body), "application/json", "application/json", additionalHeaders)
 	if err != nil {
 		return nil, err
 	}
