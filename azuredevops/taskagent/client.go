@@ -112,6 +112,7 @@ type Client interface {
 	UpdateAgent(context.Context, UpdateAgentArgs) (*TaskAgent, error)
 	// Update properties on an agent pool
 	UpdateAgentPool(context.Context, UpdateAgentPoolArgs) (*TaskAgentPool, error)
+	UpdateAgentRequest(context.Context, UpdateAgentRequestArgs) (*TaskAgentJobRequest, error)
 	// [Preview API] Update a deployment group.
 	UpdateDeploymentGroup(context.Context, UpdateDeploymentGroupArgs) (*DeploymentGroup, error)
 	// [Preview API] Update tags of a list of deployment targets in a deployment group.
@@ -1782,6 +1783,58 @@ type UpdateAgentPoolArgs struct {
 	Pool *TaskAgentPool
 	// (required) The agent pool to update
 	PoolId *int
+}
+
+func (client *ClientImpl) UpdateAgentRequest(ctx context.Context, args UpdateAgentRequestArgs) (*TaskAgentJobRequest, error) {
+	if args.Request == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.Request"}
+	}
+	routeValues := make(map[string]string)
+	if args.PoolId == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
+	}
+	routeValues["poolId"] = strconv.Itoa(*args.PoolId)
+	if args.RequestId == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.RequestId"}
+	}
+	routeValues["requestId"] = strconv.FormatUint(*args.RequestId, 10)
+
+	queryParams := url.Values{}
+	if args.LockToken == nil {
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "lockToken"}
+	}
+	queryParams.Add("lockToken", (*args.LockToken).String())
+	additionalHeaders := make(map[string]string)
+	if args.OrchestrationId != nil && *args.OrchestrationId != "" {
+		additionalHeaders["X-VSS-OrchestrationId"] = *args.OrchestrationId
+	}
+	body, marshalErr := json.Marshal(*args.Request)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+	locationId, _ := uuid.Parse("fc825784-c92a-4299-9221-998a02d1b54f")
+	resp, err := client.Client.Send(ctx, http.MethodPatch, locationId, "5.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "application/json", additionalHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseValue TaskAgentJobRequest
+	err = client.Client.UnmarshalBody(resp, &responseValue)
+	return &responseValue, err
+}
+
+// Arguments for the UpdateAgentRequest function
+type UpdateAgentRequestArgs struct {
+	// (required)
+	Request *TaskAgentJobRequest
+	// (required)
+	PoolId *int
+	// (required)
+	RequestId *uint64
+	// (required)
+	LockToken *uuid.UUID
+	// (optional)
+	OrchestrationId *string
 }
 
 // [Preview API] Update a deployment group.
