@@ -54,7 +54,7 @@ type JobEvent struct {
 	JobId                 *uuid.UUID                     `json:"jobId,omitempty"`
 	TaskId                *uuid.UUID                     `json:"taskId,omitempty"`
 	Request               *taskagent.TaskAgentJobRequest `json:"request,omitempty"`
-	RequestId             *int64                         `json:"requestId,omitempty"`
+	RequestId             *uint64                        `json:"requestId,omitempty"`
 	Result                *TaskResult                    `json:"result,omitempty"`
 	Outputs               *map[string]VariableValue      `json:"outputs,omitempty"`
 	ActionsEnvironment    *ActionsEnvironmentReference   `json:"actionsEnvironment,omitempty"`
