@@ -1249,6 +1249,8 @@ type TaskAgent struct {
 	AccessPoint *string `json:"accessPoint,omitempty"`
 	// Whether or not this agent should run jobs.
 	Enabled *bool `json:"enabled,omitempty"`
+	// Signifies that this Agent can only run one job and will be removed by the server after that one job finish.
+	Ephemeral *bool `json:"ephemeral,omitempty"`
 	// Identifier of the agent.
 	Id *int `json:"id,omitempty"`
 	// Name of the agent.
