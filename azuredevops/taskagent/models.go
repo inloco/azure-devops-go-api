@@ -1247,6 +1247,8 @@ type TaskAgent struct {
 	Links interface{} `json:"_links,omitempty"`
 	// This agent's access point.
 	AccessPoint *string `json:"accessPoint,omitempty"`
+	// Whether or not this agent should auto-update to latest version.
+	DisableUpdate *bool `json:"disableUpdate,omitempty"`
 	// Whether or not this agent should run jobs.
 	Enabled *bool `json:"enabled,omitempty"`
 	// Signifies that this Agent can only run one job and will be removed by the server after that one job finish.
