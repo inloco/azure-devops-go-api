@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"log"
 )
 
 var ResourceAreaId, _ = uuid.Parse("a85b8835-c1a1-4aac-ae97-1c3d0ba72dbd")
@@ -1412,6 +1413,11 @@ func (client *ClientImpl) GetMessage(ctx context.Context, args GetMessageArgs) (
 	if args.LastMessageId != nil {
 		queryParams.Add("lastMessageId", strconv.FormatUint(*args.LastMessageId, 10))
 	}
+	
+	runner := ctx.Value("runner").(string)
+	log.Printf("Getting message for runner %s with query params %s\n", runner, queryParams.Encode())
+	log.Printf("Getting message for runner %s with route values %s\n", runner, routeValues)
+
 	locationId, _ := uuid.Parse("c3a054f6-7a8a-49c0-944e-3a8e5d7adfd7")
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "5.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
