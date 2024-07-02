@@ -1392,7 +1392,7 @@ type GetDeploymentTargetsArgs struct {
 	PropertyFilters *[]string
 }
 
-// Return type for the GetDeploymentTargets functi	on
+// Return type for the GetDeploymentTargets function
 type GetDeploymentTargetsResponseValue struct {
 	Value []DeploymentMachine
 	// The continuation token to be used to get the next page of results.
