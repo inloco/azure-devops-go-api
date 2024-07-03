@@ -127,7 +127,7 @@ func (client *Client) Send(ctx context.Context,
 
 	log.Println("Sending request", map[string]string{
 		"URL":    req.URL.String(),
-		"method": req.Method,
+		"Method": req.Method,
 	})
 
 	resp, err := client.SendRequest(req)
@@ -137,6 +137,7 @@ func (client *Client) Send(ctx context.Context,
 
 	log.Println("Received response", map[string]string{
 		"URL":    resp.Request.URL.String(),
+		"Method": resp.Request.Method,
 		"Status": resp.Status,
 	})
 
