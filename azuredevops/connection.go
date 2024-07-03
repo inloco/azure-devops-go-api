@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -63,8 +64,10 @@ func (connection *Connection) GetClientByResourceAreaId(ctx context.Context, res
 	}
 	var client *Client
 	if resourceAreaInfo != nil {
+		log.Println("resourceAreaInfo is not nil")
 		client = connection.GetClientByUrl(*resourceAreaInfo.LocationUrl)
 	} else {
+		log.Println("resourceAreaInfo is nil")
 		// resourceAreaInfo will be nil for on prem servers
 		client = connection.GetClientByUrl(connection.BaseUrl)
 	}
