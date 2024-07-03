@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -124,10 +125,21 @@ func (client *Client) Send(ctx context.Context,
 		return nil, err
 	}
 
+	log.Println("Sending request", map[string]string{
+		"URL":    req.URL.String(),
+		"Method": req.Method,
+	})
+
 	resp, err := client.SendRequest(req)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println("Received response", map[string]string{
+		"URL":    resp.Request.URL.String(),
+		"Method": resp.Request.Method,
+		"Status": resp.Status,
+	})
 
 	// Set session if one was supplied in the response.
 	session, ok := resp.Header[headerKeySession]
