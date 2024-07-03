@@ -128,10 +128,7 @@ type ClientImpl struct {
 }
 
 func NewClient(ctx context.Context, connection *azuredevops.Connection) (Client, error) {
-	client, err := connection.GetClientByResourceAreaId(ctx, ResourceAreaId)
-	if err != nil {
-		return nil, err
-	}
+	client := connection.GetClientByUrl(connection.BaseUrl)
 	return &ClientImpl{
 		Client: *client,
 	}, nil
