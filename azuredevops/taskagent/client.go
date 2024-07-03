@@ -18,9 +18,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"io"
-
-	"sigs.k8s.io/controller-runtime/pkg/log" 
 )
 
 var ResourceAreaId, _ = uuid.Parse("a85b8835-c1a1-4aac-ae97-1c3d0ba72dbd")
@@ -1401,8 +1398,6 @@ type GetDeploymentTargetsResponseValue struct {
 
 // [Preview API]
 func (client *ClientImpl) GetMessage(ctx context.Context, args GetMessageArgs) (*TaskAgentMessage, error) {
-	logger := log.FromContext(ctx)
-
 	routeValues := make(map[string]string)
 	if args.PoolId == nil {
 		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.PoolId"}
@@ -1422,19 +1417,6 @@ func (client *ClientImpl) GetMessage(ctx context.Context, args GetMessageArgs) (
 	if err != nil {
 		return nil, err
 	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("Received response",
-		"URL", resp.Request.URL,
-		"Method", resp.Request.Method,
-		"statusCode", resp.StatusCode,
-		"headers", resp.Header,
-		"contentLength", resp.ContentLength,
-		"body", string(body),
-	)
 
 	if resp.ContentLength == 0 {
 		return nil, nil
