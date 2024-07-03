@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -78,6 +79,9 @@ func NewClientWithOptions(connection *Connection, baseUrl string, options ...Cli
 	for _, fn := range options {
 		fn(client)
 	}
+
+	log.Println("Created client with baseURL", client.baseUrl)
+
 	return client
 }
 
