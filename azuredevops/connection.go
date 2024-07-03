@@ -53,7 +53,7 @@ func CreateBasicAuthHeaderValue(username, password string) string {
 }
 
 func normalizeUrl(url string) string {
-	return strings.ToLower(strings.TrimRight(url, "/"))
+	return strings.TrimRight(url, "/")
 }
 
 func (connection *Connection) GetClientByResourceAreaId(ctx context.Context, resourceAreaID uuid.UUID) (*Client, error) {
